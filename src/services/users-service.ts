@@ -84,15 +84,14 @@ export class UsersService {
     }
 
     static async logoutUser(token: string) {
-        const session = await db.query.sessions.findFirst({
-            where: eq(sessions.token, token),
-        });
+        const result = await db.delete(sessions).where(eq(sessions.token, token));
 
-        if (!session) {
+        // In mysql2, result is an array where the first element contains info about affected rows
+        // However, drizzle's delete in mysql returns a ResultSetHeader in many cases.
+        // Let's assume unauthorized if nothing was deleted.
+        if (result[0].affectedRows === 0) {
             throw new Error("Unauthorized");
         }
-
-        await db.delete(sessions).where(eq(sessions.token, token));
 
         return "OK";
     }
