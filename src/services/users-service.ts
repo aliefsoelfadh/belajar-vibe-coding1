@@ -56,4 +56,30 @@ export class UsersService {
 
         return token;
     }
+
+    static async getCurrent(token: string) {
+        const session = await db.query.sessions.findFirst({
+            where: eq(sessions.token, token),
+        });
+
+        if (!session || !session.userId) {
+            throw new Error("Unauthorized");
+        }
+
+        const user = await db.query.users.findFirst({
+            where: eq(users.id, session.userId),
+            columns: {
+                id: true,
+                name: true,
+                email: true,
+                createdAt: true,
+            },
+        });
+
+        if (!user) {
+            throw new Error("Unauthorized");
+        }
+
+        return user;
+    }
 }
