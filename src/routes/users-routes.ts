@@ -1,7 +1,9 @@
 import { Elysia, t } from "elysia";
 import { UsersService } from "../services/users-service";
+import { authMiddleware } from "../middleware/auth-middleware";
 
 export const usersRoutes = new Elysia({ prefix: "/api/users" })
+    .use(authMiddleware)
     .post(
         "/",
         async ({ body, set }) => {
@@ -39,19 +41,26 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
             }),
         }
     )
-    .get("/current", async ({ headers, set }) => {
+    .get("/current", async ({ token, set }) => {
         try {
-            const authorization = headers.authorization;
-            if (!authorization || !authorization.startsWith("Bearer ")) {
-                throw new Error("Unauthorized");
-            }
-
-            const token = authorization.split(" ")[1];
             if (!token) {
                 throw new Error("Unauthorized");
             }
 
             const data = await UsersService.getCurrent(token);
+            return { data };
+        } catch (error: any) {
+            set.status = 401;
+            return { error: error.message };
+        }
+    })
+    .delete("/logout", async ({ token, set }) => {
+        try {
+            if (!token) {
+                throw new Error("Unauthorized");
+            }
+
+            const data = await UsersService.logoutUser(token);
             return { data };
         } catch (error: any) {
             set.status = 401;
