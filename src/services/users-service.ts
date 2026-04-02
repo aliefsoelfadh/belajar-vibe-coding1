@@ -5,6 +5,14 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 
 export class UsersService {
+    /**
+     * Mendaftarkan pengguna baru ke dalam sistem.
+     * Melakukan pengecekan ketersediaan email, mengenkripsi (men-hash) password,
+     * dan menyimpannya ke database.
+     * 
+     * @param payload Objek berisi name, email, dan password.
+     * @returns String "OK" jika registrasi berhasil.
+     */
     static async registerUser(payload: any) {
         const { name, email, password } = payload;
 
@@ -30,6 +38,14 @@ export class UsersService {
         return "OK";
     }
 
+    /**
+     * Melakukan proses autentikasi pengguna (Login).
+     * Memverifikasi keberadaan email dan mencocokkan password,
+     * lalu men-generate token sesi baru jika proses berhasil.
+     * 
+     * @param payload Objek berisi email dan password.
+     * @returns Token sesi (UUID string) yang dihasilkan.
+     */
     static async loginUser(payload: any) {
         const { email, password } = payload;
 
@@ -57,6 +73,13 @@ export class UsersService {
         return token;
     }
 
+    /**
+     * Mengambil data profil/informasi pengguna yang sedang aktif (Current User).
+     * Mengecek validitas token sesi di database dan mengembalikan detail pengguna.
+     * 
+     * @param token Token sesi yang didapatkan saat login.
+     * @returns Objek balikan berupa data pengguna (id, name, email, createdAt).
+     */
     static async getCurrent(token: string) {
         const session = await db.query.sessions.findFirst({
             where: eq(sessions.token, token),
@@ -83,6 +106,13 @@ export class UsersService {
         return user;
     }
 
+    /**
+     * Mengakhiri sesi aktif pengguna (Logout).
+     * Menghapus record token sesi dari database sehingga token tersebut tidak bisa digunakan lagi.
+     * 
+     * @param token Token sesi dari pengguna yang ingin dilogout.
+     * @returns String "OK" jika logout berhasil.
+     */
     static async logoutUser(token: string) {
         const result = await db.delete(sessions).where(eq(sessions.token, token));
 
