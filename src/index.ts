@@ -4,7 +4,7 @@ import { db } from "./db";
 import { users } from "./db/schema";
 import { usersRoutes } from "./routes/users-routes";
 
-const app = new Elysia()
+export const app = new Elysia()
     .use(cors())
     .use(usersRoutes)
     .get("/", () => ({ message: "Hello Elysia + Drizzle + Bun!" }))
